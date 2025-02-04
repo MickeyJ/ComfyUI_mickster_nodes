@@ -45,8 +45,11 @@ simple_image_loader.ui = {
 }
 
 def run(self, **kwargs):
-    # Get the selected image path from the widget
+    # Get the selected index and image path
+    selected_index = kwargs.get("selected_index", 0)
     image_path = kwargs.get("image", "")
+    
+    print(f"Python run: selected_index={selected_index}, image_path={image_path}")  # Debug
     
     if not image_path:
         return { "image": None }

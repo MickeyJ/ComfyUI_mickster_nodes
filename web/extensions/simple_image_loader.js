@@ -57,9 +57,6 @@ app.registerExtension({
                         const file = event.target.files[0];
                         const index = parseInt(event.target.dataset.index);
                         if (file) {
-                            // Set selected index to match uploaded image
-                            this.selectedIndex = index;
-                            
                             // Create a proper path that ComfyUI can understand
                             const relativePath = `${file.name}`;
                             
@@ -68,6 +65,15 @@ app.registerExtension({
                             
                             // Update button text to show filename
                             this.uploadButtons[index].name = `${index + 1}: ${file.name}`;
+
+                            // Only update the image widget if this is the selected cell
+                            if (index === this.selectedIndex) {
+                                const imageWidget = this.cellWidgets[index];
+                                if (imageWidget) {
+                                    imageWidget.value = relativePath;
+                                    imageWidget.callback?.(relativePath);
+                                }
+                            }
                         }
                     });
 

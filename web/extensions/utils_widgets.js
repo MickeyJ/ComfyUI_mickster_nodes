@@ -110,10 +110,21 @@ export class ImageCellWidget {
             // Get the image path from the button text
             const buttonText = this.node.uploadButtons[this.index].name;
             const imagePath = buttonText.split(": ")[1];
-            // Update the hidden widget value
+            // Update both the image path and selected index
             if (imagePath) {
-                this.value = imagePath;
-                this.callback?.(imagePath);
+                // Find and update both widgets
+                const widgets = this.node.widgets;
+                const imageWidget = widgets.find(w => w.name === "image");
+                const indexWidget = widgets.find(w => w.name === "selected_index");
+                
+                if (imageWidget) {
+                    imageWidget.value = imagePath;
+                    imageWidget.callback?.(imagePath);
+                }
+                if (indexWidget) {
+                    indexWidget.value = this.index;
+                    indexWidget.callback?.(this.index);
+                }
             }
             this.node.setDirtyCanvas(true);
             return true;
