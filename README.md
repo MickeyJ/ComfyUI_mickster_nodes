@@ -14,7 +14,7 @@ A node that allows selecting between multiple loaded images with a grid preview 
   - Maintains selection state
   - Proper scaling and positioning
 
-### LoRA Training
+### LoRA Training (WIP)
 A script for training LoRA adapters for Stable Diffusion models.
 - Located in: `train_lora_detailed.py`
 - Features:
@@ -48,7 +48,7 @@ A script for training LoRA adapters for Stable Diffusion models.
 2. Upload images using the upload buttons
 3. Click on image cells to select which image to output
 
-### LoRA Training
+### LoRA Training (WIP)
 ```py
 train_lora(
     image_dir="path/to/images",
