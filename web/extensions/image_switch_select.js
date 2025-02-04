@@ -4,7 +4,7 @@ import { ImageCellWidget } from "./utils_widgets.js";
 app.registerExtension({
     name: "mickster_nodes.image_switch_select",
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
-        // console.log('\nNode being registered:', nodeData.name, '\n');
+        console.log('\nNode being registered:', nodeData.name, '\n');
         
         if (nodeData.name === "ImageSwitchSelect") {
             
@@ -23,13 +23,6 @@ app.registerExtension({
                     const button = this.addWidget("button", `upload_${i}`, `Upload ${i + 1}`, () => {
                         this.fileInputs[i].click();
                     });
-                    
-                    // Style the button
-                    if (button.element) {
-                        button.element.style.height = "40px";
-                        button.element.style.fontSize = "16px";
-                        button.element.style.lineHeight = "40px";
-                    }
                     
                     this.uploadButtons.push(button);
                 }
@@ -64,9 +57,9 @@ app.registerExtension({
                             // Update button text to show filename
                             this.uploadButtons[index].name = `${index + 1}: ${file.name}`;
 
-                            // Only update the image widget if this is the selected cell
+                            // If this is the currently selected cell, update the widget value
                             if (index === this.selectedIndex) {
-                                const imageWidget = this.cellWidgets[index];
+                                const imageWidget = this.widgets.find(w => w.name === "image");
                                 if (imageWidget) {
                                     imageWidget.value = relativePath;
                                     imageWidget.callback?.(relativePath);

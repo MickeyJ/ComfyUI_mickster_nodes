@@ -10,8 +10,7 @@ import os
     display_name="ImageSwitchSelect"
 )
 def image_switch_select(
-    image: str = StringInput("", hidden=True),  # Just need a string to store the path
-    node_id: str = StringInput("", hidden=True),
+    image: str = StringInput("", hidden=True),
     selected_index: int = NumberInput(0, 0, 5, 1, hidden=True)
 ) -> ImageTensor:
     """Load a single image with preview"""
