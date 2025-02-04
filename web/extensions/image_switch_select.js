@@ -2,13 +2,11 @@ import { app } from "../../scripts/app.js";
 import { ImageCellWidget } from "./utils_widgets.js";
 
 app.registerExtension({
-    name: "mickster.simple_image_loader",
+    name: "mickster_nodes.image_switch_select",
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
         // console.log('\nNode being registered:', nodeData.name, '\n');
         
-        if (nodeData.name === "SimpleImageLoader") {
-            console.log('\nMatched SimpleImageLoader!\n');
-            console.log(app);
+        if (nodeData.name === "ImageSwitchSelect") {
             
             // Modify the node's constructor
             const onNodeCreated = nodeType.prototype.onNodeCreated;
@@ -25,6 +23,14 @@ app.registerExtension({
                     const button = this.addWidget("button", `upload_${i}`, `Upload ${i + 1}`, () => {
                         this.fileInputs[i].click();
                     });
+                    
+                    // Style the button
+                    if (button.element) {
+                        button.element.style.height = "40px";
+                        button.element.style.fontSize = "16px";
+                        button.element.style.lineHeight = "40px";
+                    }
+                    
                     this.uploadButtons.push(button);
                 }
 
@@ -49,24 +55,22 @@ app.registerExtension({
                         const file = event.target.files[0];
                         const index = parseInt(event.target.dataset.index);
                         if (file) {
-                            // Get the widgets
-                            const widgets = this.widgets.filter(w => w.name === "image");
-                            if (widgets.length > 0) {
-                                const widget = widgets[0];
-                                
-                                // Create a proper path that ComfyUI can understand
-                                const relativePath = `${file.name}`; // This will look in ComfyUI's input directory
-                                
-                                // Set the file path to the widget
-                                widget.value = relativePath;
-                                // Trigger widget changed
-                                widget.callback?.(widget.value);
-                                
-                                // Update preview for specific grid cell
-                                loadImage(this, `/view?filename=${relativePath}&type=input`, index);
-                                
-                                // Update button text to show filename
-                                this.uploadButtons[index].name = `${index + 1}: ${file.name}`;
+                            // Create a proper path that ComfyUI can understand
+                            const relativePath = `${file.name}`;
+                            
+                            // Update preview for specific grid cell
+                            loadImage(this, `/view?filename=${relativePath}&type=input`, index);
+                            
+                            // Update button text to show filename
+                            this.uploadButtons[index].name = `${index + 1}: ${file.name}`;
+
+                            // Only update the image widget if this is the selected cell
+                            if (index === this.selectedIndex) {
+                                const imageWidget = this.cellWidgets[index];
+                                if (imageWidget) {
+                                    imageWidget.value = relativePath;
+                                    imageWidget.callback?.(relativePath);
+                                }
                             }
                         }
                     });
@@ -92,16 +96,19 @@ app.registerExtension({
             };
 
             nodeType.prototype.onExecuted = function(message) {
-                console.log("onExecuted called with message:", message);  // Debug log
+                console.log("onExecuted called with:", {
+                    selectedIndex: this.selectedIndex,
+                    message: message
+                });
                 
                 if (message?.detail?.output?.image) {
                     const imagePath = message.detail.output.image;
-                    console.log("Image path:", imagePath);  // Debug log
                     if (!this.imageElements) {
                         this.imageElements = new Array(6).fill(null);
                     }
                     // Only update the selected image
                     if (!this.imageElements[this.selectedIndex]) {
+                        console.log("Loading image for index:", this.selectedIndex);
                         loadImage(this, `/view?filename=${imagePath}&type=input`, this.selectedIndex);
                     }
                 }

@@ -5,8 +5,7 @@ import easy_nodes
 easy_nodes.initialize_easy_nodes(default_category="mickster_nodes", auto_register=False)
 
 # Import nodes after initialization
-from .image_selector import image_selector
-from .simple_image_loader import simple_image_loader
+from .nodes.image_switch_select import image_switch_select
 
 # Get node mappings from easy_nodes
 NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS = easy_nodes.get_node_mappings()
