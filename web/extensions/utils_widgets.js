@@ -1,5 +1,19 @@
 import { app } from "../../scripts/app.js";
 
+export class UploadButtonWidget {
+    constructor(node, index, callback) {
+        this.node = node;
+        this.index = index;
+        this.type = 'button';
+        this.name = `upload_image_${index}`;
+        this.value = `Upload Image ${index + 1}`;  // Button text
+        this.options = {};
+        this.callback = callback;
+        this.serializable = false;
+        this.configurable = false;
+    }
+}
+
 export class ImageCellWidget {
     constructor(node, index) {
         this.node = node;
