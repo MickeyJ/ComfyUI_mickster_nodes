@@ -6,6 +6,7 @@ easy_nodes.initialize_easy_nodes(default_category="mickster_nodes", auto_registe
 
 # Import nodes after initialization
 from .nodes.image_switch_select import image_switch_select
+from .nodes.image_size_scaled import image_size_scaled
 
 # Get node mappings from easy_nodes
 NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS = easy_nodes.get_node_mappings()

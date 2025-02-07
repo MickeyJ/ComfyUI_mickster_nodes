@@ -1,3 +1,4 @@
 {
-  "ImageSwitchSelect": "Load a single image with preview"
+  "ImageSwitchSelect": "Load a single image with preview",
+  "Image Size Scaled": "Outputs scaled width and height based on the scale input."
 }

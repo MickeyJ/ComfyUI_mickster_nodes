@@ -32,7 +32,7 @@ from peft import LoraConfig, get_peft_model  # LoRA adaptation tools
 class PersonDataset(Dataset):
     """Dataset class that handles loading and processing of training images"""
 
-    def __init__(self, image_dir, instance_prompt, tokenizer, size=512):
+    def __init__(self, image_dir=None, instance_prompt=None, tokenizer=None, size=512, mock_data=False, num_samples=10):
         # Store initialization parameters
         self.image_dir = image_dir  # Root directory containing training images
         self.instance_prompt = (
@@ -42,16 +42,21 @@ class PersonDataset(Dataset):
         self.size = (
             size  # Target size for image processing (512x512 is standard for SD)
         )
+        self.mock_data = mock_data  # Flag to use mock data
 
-        # Get all valid image paths - supports PNG, JPG, JPEG
-        self.image_paths = [
-            os.path.join(image_dir, f)
-            for f in os.listdir(image_dir)
-            if f.endswith((".png", ".jpg", ".jpeg"))
-        ]
-
-        # Get corresponding text files (same name but .txt extension)
-        self.text_paths = [p.rsplit(".", 1)[0] + ".txt" for p in self.image_paths]
+        if mock_data:
+            # Generate mock data
+            self.image_paths = [f"mock_image_{i}.png" for i in range(num_samples)]
+            self.text_paths = [f"mock_image_{i}.txt" for i in range(num_samples)]
+        else:
+            # Get all valid image paths - supports PNG, JPG, JPEG
+            self.image_paths = [
+                os.path.join(image_dir, f)
+                for f in os.listdir(image_dir)
+                if f.endswith((".png", ".jpg", ".jpeg"))
+            ]
+            # Get corresponding text files (same name but .txt extension)
+            self.text_paths = [p.rsplit(".", 1)[0] + ".txt" for p in self.image_paths]
 
         # Define image preprocessing pipeline
         self.transform = transforms.Compose(
@@ -71,10 +76,14 @@ class PersonDataset(Dataset):
 
     def __getitem__(self, idx):
         """Load and process a single image-text pair - required by PyTorch Dataset"""
-        # Load image from disk and convert to RGB
-        image_path = self.image_paths[idx]
-        image = Image.open(image_path).convert("RGB")
-        image = self.transform(image)
+        if self.mock_data:
+            # Create a dummy image tensor if using mock data
+            image = torch.zeros((3, self.size, self.size))  # Shape: [3, size, size]
+        else:
+            # Load image from disk and convert to RGB
+            image_path = self.image_paths[idx]
+            image = Image.open(image_path).convert("RGB")
+            image = self.transform(image)
 
         # Try to load specific prompt from text file, fall back to instance_prompt
         text_path = self.text_paths[idx]
@@ -101,7 +110,7 @@ class PersonDataset(Dataset):
 
 
 def train_lora(
-    image_dir: str,  # Path to directory containing training images
+    image_dir: str = None,  # Path to directory containing training images
     output_dir: str,  # Path to save model checkpoints and final weights
     instance_prompt: str = "photo of sks person",  # Text prompt for training
     batch_size: int = 1,  # Images per batch (limited by GPU memory)
@@ -111,6 +120,8 @@ def train_lora(
     model_id: str = "runwayml/stable-diffusion-v1-5",  # Base model to fine-tune
     validation_split: float = 0.1,  # Fraction of data to use for validation
     checkpoint_freq: int = 10,  # Save checkpoint every N epochs
+    mock_data: bool = False,  # Flag to use mock data
+    num_samples: int = 10,  # Number of mock samples to generate
 ):
     """Train a LoRA adapter for Stable Diffusion fine-tuning"""
 
@@ -141,8 +152,8 @@ def train_lora(
     # Apply LoRA to U-Net model
     unet = get_peft_model(unet, lora_config)  # Wraps model with LoRA layers
 
-    # Create and split dataset
-    dataset = PersonDataset(image_dir, instance_prompt, tokenizer)
+    # Create dataset with mock data if specified
+    dataset = PersonDataset(image_dir=image_dir, instance_prompt=instance_prompt, tokenizer=tokenizer, mock_data=mock_data, num_samples=num_samples)
     val_size = int(len(dataset) * validation_split)  # Calculate validation set size
     train_size = len(dataset) - val_size  # Remaining data for training
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
